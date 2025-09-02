@@ -4,7 +4,7 @@ use std::{
     error::Error,
     fmt::{Debug, Formatter, Result as FmtResult},
     hash::{Hash, Hasher},
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
 };
 
 /// A reference-counted pointer to a `Step` in the Markov chain.
@@ -15,7 +15,7 @@ pub struct Step<T: Eq + Copy + Hash + Debug + Send + Sync> {
     /// The state value for this step.
     pub state: T,
     /// Outgoing transitions and their weights.
-    pub transitions: Mutex<HashMap<ToStep<T>, usize>>,
+    pub transitions: RwLock<HashMap<ToStep<T>, usize>>,
 }
 
 impl<T> Clone for Step<T>
@@ -24,10 +24,10 @@ where
 {
     fn clone(&self) -> Self {
         #[allow(clippy::mutable_key_type)]
-        let transitions = self.transitions.lock().unwrap().clone();
+        let transitions = self.transitions.read().unwrap().clone();
         Step {
             state: self.state,
-            transitions: Mutex::new(transitions),
+            transitions: RwLock::new(transitions),
         }
     }
 }
@@ -69,19 +69,19 @@ where
     pub fn new(state: T) -> Self {
         Step {
             state,
-            transitions: Mutex::new(HashMap::new()),
+            transitions: RwLock::new(HashMap::new()),
         }
     }
 
     /// Add or update a transition to another step with a given weight.
     pub fn insert_transition(&self, to_step: ToStep<T>, weight: usize) {
-        self.transitions.lock().unwrap().insert(to_step, weight);
+        self.transitions.write().unwrap().insert(to_step, weight);
     }
 
     /// Randomly select the next step based on transition weights.
     pub fn next(&self) -> Option<ToStep<T>> {
         let mut rng = rand::rng();
-        let transitions = self.transitions.lock().unwrap();
+        let transitions = self.transitions.read().unwrap();
         if transitions.is_empty() {
             return None;
         }

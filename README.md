@@ -8,6 +8,7 @@ A minimal, thread-safe Markov chain implementation using reference-counted steps
 ## Features
 
 - Generic over state type `T` (must be `Eq + Copy + Hash + Debug` and `Send + Sync`)
+- Transitions are protected by an `RwLock` to allow concurrent reads during traversal.
 - Weighted transitions between states
 - Non-mutable (`walk`) and mutable (`mut_walk`) traversal utilities
 
@@ -71,7 +72,7 @@ step_true.insert_transition(step_true.clone(), 1);
 let path = mut_walk(step_false.clone(), 100, |current, next| {
   current
     .transitions
-    .lock()
+    .write()
     .unwrap()
     .entry(next)
     .and_modify(|e| *e += 1)
@@ -79,8 +80,8 @@ let path = mut_walk(step_false.clone(), 100, |current, next| {
   Ok(())
 }).unwrap();
 
-let step_true_count = step_true.transitions.lock().unwrap().values().sum::<usize>();
-let step_false_count = step_false.transitions.lock().unwrap().values().sum::<usize>();
+let step_true_count = step_true.transitions.read().unwrap().values().sum::<usize>();
+let step_false_count = step_false.transitions.read().unwrap().values().sum::<usize>();
 assert_eq!(path.len(), 100);
 assert_eq!(step_true_count + step_false_count, 103);
 ```
@@ -94,6 +95,11 @@ assert_eq!(step_true_count + step_false_count, 103);
 - `Step::next(&self) -> Option<ToStep<T>>`: choose the next step randomly by weights.
 - `walk(start: ToStep<T>, steps: usize) -> Vec<T>`: traverse and return visited states.
 - `mut_walk(start: ToStep<T>, steps: usize, apply: F) -> Result<Vec<T>, Box<dyn std::error::Error>>`: traverse while calling `apply(current, next)` for every transition.
+
+Notes on concurrency and lifetimes:
+
+- Transitions are stored in an `RwLock`-protected map. Readers (e.g. `Step::next`) acquire a read lock allowing concurrent selections, while mutations (insertion or updates) acquire a write lock.
+- Transition entries hold `Arc<Step<T>>` strong references by default, so transitions keep destination steps alive. If you prefer non-owning references, consider using `Weak<Step<T>>` in the map and `upgrade()` during selection.
 
 ## Docs & tests
 

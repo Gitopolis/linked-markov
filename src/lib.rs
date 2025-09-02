@@ -57,7 +57,7 @@ mod tests {
         let path = mut_walk(step_false.clone(), 100, |current, next| {
             current
                 .transitions
-                .lock()
+                .write()
                 .unwrap()
                 .entry(next)
                 .and_modify(|e| *e += 1)
@@ -67,13 +67,13 @@ mod tests {
         .unwrap();
         let step_true_count = step_true
             .transitions
-            .lock()
+            .read()
             .unwrap()
             .values()
             .sum::<usize>();
         let step_false_count = step_false
             .transitions
-            .lock()
+            .read()
             .unwrap()
             .values()
             .sum::<usize>();
