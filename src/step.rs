@@ -11,6 +11,7 @@ use std::{
 pub type ToStep<T> = Arc<Step<T>>;
 
 /// A node in the Markov chain, holding a state and weighted transitions to other steps.
+#[derive(Default)]
 pub struct Step<T: Eq + Copy + Hash + Debug + Send + Sync> {
     /// The state value for this step.
     pub state: T,
@@ -123,6 +124,29 @@ where
 /// Walk the Markov chain for a fixed number of steps, applying a function to each transition.
 ///
 /// The `apply` function is called with the current and next step, and can mutate the chain or collect data.
+/// # Examples:
+/// ```
+/// use linked_markov::{Step, ToStep, mut_walk};
+/// use std::sync::Arc;
+///
+/// let step_false: ToStep<bool> = Arc::new(Step::new(false));
+/// let step_true: ToStep<bool> = Arc::new(Step::new(true));
+/// step_false.insert_transition(step_true.clone(), 3);
+/// step_false.insert_transition(step_false.clone(), 1);
+/// step_true.insert_transition(step_false.clone(), 3);
+/// step_true.insert_transition(step_true.clone(), 1);
+/// let path = mut_walk(step_false, 100, |current, next| {
+///     current
+///         .transitions
+///         .write()
+///         .unwrap()
+///         .entry(next)
+///         .and_modify(|e| *e += 1)
+///         .or_insert(1);
+///     Ok(())
+/// })
+/// .unwrap();
+/// ```
 pub fn mut_walk<T, F>(start: ToStep<T>, steps: usize, apply: F) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: Eq + Copy + Hash + Debug + Send + Sync,

@@ -1,7 +1,12 @@
 [package]
 name = "linked-markov"
+description = "A minimal, thread-safe Markov chain implementation using reference-counted steps and weighted transitions"
 version = "0.1.0"
 edition = "2024"
+authors = ["Nikita Kutselev <qnicks@gmail.com>"]
+license = "CC0-1.0"
+keywords = ["markov", "chain", "probability"]
+readme = "README.md"
 
 [dependencies]
 rand = "0.9.2"

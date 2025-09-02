@@ -7,7 +7,7 @@
 //! - Weighted transitions between states
 //! - Deterministic and mutable walks
 //!
-//! ## Example
+//! ## Examples
 //! ```rust
 //! use linked_markov::{Step, ToStep, walk};
 //! use std::sync::Arc;
