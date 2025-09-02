@@ -1,7 +1,8 @@
 # linked-markov
 
-[![License: CC0 1.0](https://img.shields.io/badge/license-CC0%201.0-lightgrey.svg)](LICENSE)
+[![crates.io](https://img.shields.io/crates/v/linked-markov)](https://crates.io/crates/linked-markov)
 [![CI](https://github.com/Gitopolis/linked-markov/actions/workflows/ci.yml/badge.svg)](https://github.com/Gitopolis/linked-markov/actions)
+[![License: CC0 1.0](https://img.shields.io/badge/license-CC0%201.0-lightgrey.svg)](./LICENSE)
 
 A minimal, thread-safe Markov chain implementation using reference-counted steps and weighted transitions.
 
