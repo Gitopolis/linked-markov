@@ -640,7 +640,7 @@ herald --> to: 100%
 
 ```rust
 use std::{collections::HashMap, vec};
-use std::thread::{self, JoinHandle};
+use std::thread;
 use std::sync::{Arc, RwLock};
 use linked_markov::{Step, ToStep};
 
@@ -705,7 +705,7 @@ fn main() {
     // store string slices as the Step state (they are Copy) — sonnets are string literals
     let dictionary: Arc<RwLock<HashMap<&'static str, ToStep<&'static str>>>> =
         Arc::new(RwLock::new(HashMap::new()));
-    let mut threads: Vec<JoinHandle<()>> = vec![];
+    let mut threads: Vec<_> = vec![];
     for sonnet in SONNETS.iter().cloned() {
         let dict = Arc::clone(&dictionary);
         threads.push(thread::spawn(move || {
